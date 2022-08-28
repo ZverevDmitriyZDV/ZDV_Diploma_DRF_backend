@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load rest_framework %}
+
+{% block title %}Product INFO{% endblock %}
+
+{% block content %}
+
+{% for form in context %}
+    {% include "product.html" %}
+{% endfor %}
+
+{% endblock %}
+
+
+

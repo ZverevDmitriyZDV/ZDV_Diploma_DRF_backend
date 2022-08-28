@@ -1,0 +1,48 @@
+<style type="text/css">
+
+/* скрываем чекбоксы и блоки с содержанием */
+.hide, .hide + label ~ div {
+    display: none;
+}
+/* вид текста label */
+.hide + label,
+.hide:checked + label {
+    padding: 0;
+    color: blue;
+    cursor: pointer;
+    border-bottom: 1px dotted blue;
+}
+/* вид текста label при активном переключателе */
+.hide:checked + label {
+    color: black;
+    border-bottom: 0;
+}
+/* когда чекбокс активен показываем блоки с содержанием  */
+.hide:checked + label + div {
+    display: block;
+    width: 800px;
+    background: #efefef;
+    padding: 10px;
+    background: #fff; /* цвет фона, белый */
+    border: 2px solid #C1C1C1; /* размер и цвет границы блока */
+}
+</style>
+
+<div class="discription">
+    <input class="hide" id="hd-{{form.id}}-{{shop.shop_id}}" type="checkbox" >
+    <label for="hd-{{form.id}}-{{shop.shop_id}}">Описание</label>
+    <div>
+        {% block content %}
+                {% for info_elem in shop.info %}
+                        {{ info_elem.parameter }} : {{ info_elem.value }}
+                {% endfor %}
+        {% endblock %}
+    </div>
+
+</div>
+
+
+
+
+
+
