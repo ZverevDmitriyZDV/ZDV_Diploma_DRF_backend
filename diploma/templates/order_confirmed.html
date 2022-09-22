@@ -1,0 +1,12 @@
+{% autoescape off %}
+Hi {{ user.username }},
+Ваш заказ сформирован. Отслеживайте статус заказа на сайте
+Номер заказа: {{order}}
+Цена Итого: {{price}}
+
+
+Подтвердите заказ  по ссылке
+http://{{ domain }}{% url 'order_payed' uidb64=uid token=token order=order %}
+
+
+{% endautoescape %}

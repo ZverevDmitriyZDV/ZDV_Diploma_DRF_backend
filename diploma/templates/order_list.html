@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load rest_framework %}
+
+{% block title %}Order INFO{% endblock %}
+
+{% block content %}
+
+{% for order in context %}
+    {% include "order_item.html" %}
+{% endfor %}
+
+{% endblock %}

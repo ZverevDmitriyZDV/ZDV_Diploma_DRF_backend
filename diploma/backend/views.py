@@ -1,47 +1,68 @@
 import logging
-from pprint import pprint
-
-from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView
 from django.contrib.sites.shortcuts import get_current_site
-from django.dispatch import Signal
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views.generic import CreateView, TemplateView
-from rest_framework.authentication import BasicAuthentication, TokenAuthentication
+from rest_framework.authentication import  TokenAuthentication
 from rest_framework.exceptions import ValidationError
-from backend.models import Shop, ProductInfo, Product, CustomUser, Category, Parameter, ProductParameter, ClientCard
+from backend.models import (
+    Shop,
+    ProductInfo,
+    Product,
+    Order,
+    OrderItem,
+    CustomUser,
+    Category,
+    Parameter,
+    ProductParameter,
+    ClientCard
+)
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import JsonResponse
 from requests import get
 from rest_framework.generics import ListAPIView
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
 from django.db.models import Q, Sum, F
-from rest_framework.authtoken import views
-from django.shortcuts import get_object_or_404
-from rest_framework.renderers import TemplateHTMLRenderer
 from django.core.mail import EmailMessage
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
-from backend.forms import CustomUserCreationForm, InfoForPasswordChangeForm, PasswordChangeForm, ClientCardForm, \
-    AccountInfoForm, PasswordChangeForm, ShopForm
-from rest_framework import authentication
-from backend.serializers import ShopSerializer, ClientCardSerializer, UserSerializer, CategorySerializer, \
-    ProductParameterSerializer, ProductInfoSerializer, OrderItemSerializer, OrderItemSerializer, OrderSerializer, \
-    ShopSerializerForCustomer, ProductGetSerializer, ProductSerializer, ProductGetProductSerializer, ShopNameSerializer, \
-    ProductGetShopSerializer
+from backend.forms import (
+    CustomUserCreationForm,
+    InfoForPasswordChangeForm,
+    PasswordChangeForm,
+    ClientCardForm,
+    AccountInfoForm,
+    PasswordChangeForm,
+    ShopForm
+)
+from backend.serializers import (
+    ShopSerializer,
+    ClientCardSerializer,
+    UserSerializer,
+    CategorySerializer,
+    ProductParameterSerializer,
+    ProductInfoSerializer,
+    OrderItemSerializer,
+    OrderItemSerializer,
+    OrderSerializer,
+    ShopSerializerForCustomer,
+    ProductGetSerializer,
+    ProductSerializer,
+    ProductGetProductSerializer,
+    ShopNameSerializer,
+    ProductGetShopSerializer,
+    PartnerOrderSerializer,
+    OrderSerializerTemplate
+)
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.password_validation import validate_password
-from rest_framework.renderers import JSONRenderer
 
-
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 
 class HomepageView(TemplateView):
@@ -210,42 +231,6 @@ class ChangePasswordView(APIView):
         if user.type != "distributor":
             need_user.delete()
         return JsonResponse({'Status': True, 'Comment': f'''Password Changed to {form.data.get("password1")}'''})
-
-
-### Класс для редактирвоания через форму карточки клиента.
-# class ClientCardView(CreateView):
-#     form_class = ClientCardForm
-#     success_url = reverse_lazy("homepage")
-#     template_name = 'client.html'
-#
-#     def post(self, request):
-#         if not request.user.is_authenticated:
-#             return render(request, 'signup.html')
-#         form = ClientCardForm(request.POST)
-#         if form.is_valid():
-#             valid_data = form.data
-#             valid_data._mutable = True
-#             valid_data.update({'user': self.request.user.id})
-#             try:
-#                 client_card = ClientCard.objects.get(user_id=self.request.user.id)
-#                 serializer = ClientCardSerializer(client_card, data=valid_data, partial=True)
-#             except:
-#                 serializer = ClientCardSerializer(data=valid_data)
-#             if serializer.is_valid():
-#                 serializer.save()
-#             return redirect("homepage")
-#         else:
-#             return render(request, self.template_name, {"form": form})
-#
-#     def get(self, request):
-#         if not request.user.is_authenticated:
-#             return render(request, 'signup.html')
-#         try:
-#             client_card = ClientCard.objects.get(user_id=self.request.user.id)
-#             form = ClientCardForm(instance=client_card)
-#         except:
-#             form = ClientCardForm()
-#         return render(request, self.template_name, {"form": form})
 
 
 class AccountDetails(CreateView):
@@ -451,10 +436,16 @@ class ProductInfoView(APIView):
 
 class ProductInfoForUserView(TemplateView):
     template_name = 'product_list.html'
+    '''
+    мотод для передачи данных на рендер страницы
+    get выдает отформатированные данные по ID товара.
+    post - получаем request из формы, передает количество на заказ и данные ProductInfo
+    '''
 
     def get(self, request, *args, **kwargs):
+        user_id = request.user.id
+        order_item, _ = Order.objects.get_or_create(user_id=user_id, status='in_process')
         products_query = Product.objects.all()
-        data = {}
         data_list = []
         for product in products_query:
             shop_query = ProductInfo.objects.filter(
@@ -473,25 +464,191 @@ class ProductInfoForUserView(TemplateView):
                         name=shop_name
                     )
                 )
+                query = Q(product_id=shop.get("id")) & Q(order_id=order_item.id) & Q(shop_id=shop_id)
+                ordered_items = OrderItem.objects.filter(query).distinct()
+                if ordered_items.exists():
+                    ordered_items_serializer = OrderItemSerializer(ordered_items, many=True)
+                    qty_ordered = ordered_items_serializer.data[0]['quantity']
+                else:
+                    qty_ordered = 0
                 product_info_dict = dict(
                     shop=shop_name,
                     info=product_info,
                     price=shop.get("price"),
                     price_rrc=shop.get("price_rrc"),
                     quantity=shop.get("quantity"),
-                    shop_id = shop_id
+                    shop_id=shop_id,
+                    product_info_id=shop.get("id"),
+                    ordered_items=qty_ordered
                 )
                 info_list.append(product_info_dict)
             data = dict(
-                id = product.id,
+                id=product.id,
                 name=product.name,
                 category=product.category,
-                shops= shop_list,
-                info = info_list
+                shops=shop_list,
+                info=info_list
             )
-
             data_list.append(data)
-        pprint(data_list)
-
-
         return render(request, self.template_name, {"context": data_list})
+
+    def post(self, request, *args, **kwargs):
+        user_id = request.user.id
+        shop_id = request.POST.get("shop_id")
+        qty = request.POST.get("qty")
+        product_info_id = request.POST.get("product_info_id")
+        order_item, _ = Order.objects.get_or_create(user_id=user_id, status='in_process')
+
+        try:
+            order_exist = OrderItem.objects.get(order_id=order_item.id,
+                                                product_id=product_info_id)
+            order_exist.quantity = qty
+            order_exist.save()
+        except:
+            new_order_item = OrderItem.objects.create(order_id=order_item.id,
+                                                      product_id=product_info_id,
+                                                      quantity=qty,
+                                                      shop_id=shop_id)
+        return self.get(request, *args, **kwargs)
+
+
+class OrderView(APIView):
+    '''класс для получения данных по истории заказе API по авторизованному клиенту'''
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+        order = Order.objects.filter(
+            user=request.user.id).prefetch_related(
+            'order_items__product__product__category',
+            'order_items__product__product_parameters__parameter').select_related('user').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product__price'))).distinct()
+
+        serializer = OrderSerializer(order, many=True)
+        return Response(serializer.data)
+
+
+class OrderPayedView(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request, *args, **kwargs):
+        order = Order.objects.get(id=kwargs.get("order"))
+        order.status = 'paid'
+        order.save()
+        return Response({"Status": "PAYED"})
+
+
+class OrderTemplateView(TemplateView):
+    '''шаблон выдачи информации по заказу'''
+    template_name = 'order_list.html'
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+        order = Order.objects.filter(
+            user=request.user.id).exclude(status="in_process").prefetch_related(
+            'order_items__product__product__category',
+            'order_items__product__product_parameters__parameter').select_related('user').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product__price'))).distinct()
+
+        serializer = OrderSerializerTemplate(order, many=True)
+        return render(request, self.template_name, {"context": serializer.data})
+
+
+class OrderUproveTemplateView(OrderView):
+    '''класс для подтверждения заказа'''
+
+    def post(self, request, *args, **kwargs):
+        order_id = request.POST.get('order_id')
+        price = request.POST.get('price')
+        user = request.user
+        to_email = user.email
+        vid = urlsafe_base64_encode(force_bytes(user.pk))
+        token, created = Token.objects.get_or_create(user=user)
+        current_site = get_current_site(request)
+        message = render_to_string('order_confirmed.html', {
+            'user': user,
+            'order': order_id,
+            'price': price,
+            'domain': current_site.domain,
+            'uid': vid,
+            'token': token.key,
+        })
+
+        mail_subject = 'Your Order '
+        email = EmailMessage(mail_subject, message, to=[to_email])
+        email.send()
+
+        return Response({'Status': "Письмо отправлено"})
+
+
+class BasketTemplateView(TemplateView):
+    '''класс для обработки элементов корзины'''
+    template_name = 'basket_list.html'
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+        order = Order.objects.filter(
+            user=request.user.id, status="in_process").prefetch_related(
+            'order_items__product__product__category',
+            'order_items__product__product_parameters__parameter').select_related('user').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product__price'))).distinct()
+        serializer = OrderSerializer(order, many=True)
+
+        if serializer.data[0]['total_sum'] is None:
+            return redirect('products_user')
+
+        return render(request, self.template_name, {"context": serializer.data[0]})
+
+    def post(self, request, *args, **kwargs):
+        method_iner = request.POST.get("method")
+        if method_iner == "Удалить   заказ":
+            order_id = request.POST.get("order_id")
+            order = Order.objects.get(id=order_id)
+            order.delete()
+            return redirect('products-user')
+
+        order_item_id = request.POST.get("order_item_id")
+        qty = request.POST.get("qty")
+        need_item = OrderItem.objects.get(id=order_item_id)
+
+        method_iner = 'удалить' if int(qty) == 0 else method_iner
+        if method_iner == 'изменить':
+            need_item.quantity = qty
+            need_item.save()
+        elif method_iner == 'удалить':
+            need_item.delete()
+        return self.get(request)
+
+
+class PartnerOrderView(APIView):
+    """
+    Класс для поиска всех товаров в заказе для конкретного магазина
+    с использованием фильтра по номеру заказа
+    http://127.0.0.1:8000/api/v1/partner/orders?order=2?status="paid"
+    """
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+        if request.user.type != "distributor":
+            return JsonResponse({'Status': False, 'Error': 'Log in as shop required'}, status=403)
+
+        order_id = request.query_params.get('order')
+        status = request.query_params.get('status')
+        shop_order = Shop.objects.get(user=request.user.id)
+        query = Q(shop_id=shop_order.id)
+        if order_id:
+            query = query & Q(order_id=order_id)
+        if status:
+            query = query & Q(order__status=status)
+
+        orders = OrderItem.objects.filter(query).prefetch_related(
+            'order__user'
+        ).select_related(
+            'order'
+        )
+
+        serializer = PartnerOrderSerializer(orders, many=True)
+        return Response(serializer.data)

@@ -1,18 +1,49 @@
-{#{% extends "product_list.html" %}#}
 <meta http-equiv=Content-Type content="text/html;charset=utf-8">
 <style>
-.prokrutka {
-    height: 100px; /* высота нашего блока */
-    width: 800px; /* ширина нашего блока */
-    background: #fff; /* цвет фона, белый */
-    border: 2px solid #C1C1C1; /* размер и цвет границы блока */
-    overflow-y: scroll; /* прокрутка по вертикали */
-}
 .product_card {
-    border: 4px solid #F00; /* размер и цвет границы блока */
+	display: block;
+	width: 90%;
+	float: left;
+	transition: width .2s;
+    border: 1px solid #b5e9a7;
+	border-radius: 3px;
+	margin: 15px 15px 15px 15px;
+
+
 }
+form.form-example {
+    display: table;
+}
+
+div.form-example {
+    display: table-row;
+}
+
+label, input {
+    display: table-cell;
+    margin-bottom: 10px;
+}
+
+label {
+    padding-right: 10px;
+}
+
 .product_card_info {
-    border: 1px solid #F00; /* размер и цвет границы блока */
+
+
+    display: block;
+	border: 1px solid #b5e9a7;
+	border-radius: 3px;
+	position: relative;
+	background: #fff;
+	margin: 20px 20px 20px 20px;
+	text-decoration: none;
+	color: #474747;
+	z-index: 0;
+    padding: 0;
+    float: left
+
+
 }
 </style>
 
@@ -21,28 +52,36 @@
 
 
 
-<div class="product_card">
+<div class="product_card" >
+
     <p> {{ form.name }} </p>
     <p> Категория: {{ form.category }} </p>
-    <br/>
-    <select id="select{{form.id}}" onchange="handleSelectChange({{form.id}},{{form}})">
-        <option value="all"> ---- </option>
-        {% for shop in form.shops %}
-            <option value={{shop.id}}> {{shop.name}}</option>
-        {% endfor %}
-    </select>
 
-    <div id="product_description_{{form.id}}" onload="renderShopCard(all,{{form}})">
-    </div>
-<!--   {% for shop in form.info %}-->
-<!--    <div class="product_card_info">-->
-<!--        <p>-->
-<!--        Магазин : {{shop.shop}}  |-->
-<!--        Цена <b>{{shop.price}}</b>   |-->
-<!--        Цена до <b>{{shop.price_rrc}}</b>   |-->
-<!--        Остаток <b>{{shop.quantity}}</b>   |-->
-<!--        <button type="submit">В корзину</button>   |-->
-<!--        {% include "product_info.html" %}-->
-<!--    </div>-->
-<!--    {% endfor %}-->
+
+    {% for shop in form.info %}
+
+
+        <div class="product_card_info">
+
+            Магазин : {{shop.shop}}
+            Цена <b>{{shop.price}}</b>
+            Цена до <b>{{shop.price_rrc}}</b>
+            Остаток <b>{{shop.quantity}}</b>
+            {% include "product_info.html" %}
+
+            <form action="" method="post" class="form-example">
+                {% csrf_token %}
+
+                <div class="form-example">
+                    <label for="q-ty">Q-ty pcs: </label>
+                    <input type="number" name="qty" id="qty" required min = "1" max = "{{shop.quantity}}" value= "{{shop.ordered_items}}">
+                    <input type="hidden" name="shop_id" value="{{shop.shop_id}}">
+                    <input type="hidden" name="product_info_id" value="{{shop.product_info_id}}">
+
+                    <input type="submit" value="В корзину!">
+                </div>
+            </form>
+        </div>
+    {% endfor %}
 </div>
+

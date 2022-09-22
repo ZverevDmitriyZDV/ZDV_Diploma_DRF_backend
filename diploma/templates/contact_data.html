@@ -30,16 +30,24 @@
 }
 </style>
 
-
-<input class="hide" id="hd-{{form.id}}-{{shop.shop_id}}" type="checkbox" >
-<label for="hd-{{form.id}}-{{shop.shop_id}}">Описание</label>
-<div>
     {% block content %}
-            {% for info_elem in shop.info %}
-                <p>{{ info_elem.parameter }} : {{ info_elem.value }}</p>
-            {% endfor %}
+        {% for contact_info in order.user.contacts%}
+            <input class="hide" id="hd-{{contact_info.id}}" type="checkbox" >
+            <label for="hd-{{contact_info.id}}">Карточка клиента</label>
+            <div>
+                <p>Телефон:{{contact_info.mobile}}</p>
+                <p>Страна:{{contact_info.country}}</p>
+                <p>Город:{{contact_info.city}}</p>
+                <p>Индекс:{{contact_info.postcode}}</p>
+                <p>Улица:{{contact_info.street}}</p>
+                <p>Дом:{{contact_info.buildings}}</p>
+                <p>Квартира:{{contact_info.apt}}</p>
+            </div>
+        {% endfor %}
     {% endblock %}
-</div>
+
+
+
 
 
 

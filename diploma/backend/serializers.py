@@ -91,10 +91,11 @@ class ProductGetShopSerializer(ProductGetProductSerializer):
 
     class Meta:
         model = ProductInfo
-        fields = ('shop','product_parameters','quantity', 'price', 'price_rrc')
+        fields = ('id', 'shop', 'product_parameters', 'quantity', 'price', 'price_rrc')
         read_only_fields = ('id',)
 
 
+####
 class ProductInfoSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     product_parameters = ProductParameterSerializer(read_only=True, many=True)
@@ -105,10 +106,33 @@ class ProductInfoSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
+class ProductInfoForShopSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = ProductInfo
+        fields = ('id', 'name', 'product', 'quantity', 'price', 'price_rrc')
+        read_only_fields = ('id',)
+
+
 class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductInfoSerializer(read_only=True)
+
     class Meta:
         model = OrderItem
         fields = ('id', 'product', 'quantity', 'order',)
+        read_only_fields = ('id',)
+        extra_kwargs = {
+            'order': {'write_only': True}
+        }
+
+
+class OrderTemplateSerializer(serializers.ModelSerializer):
+    product = ProductInfoSerializer(read_only=True)
+    shop = ShopNameSerializer(read_only=True)
+    class Meta:
+        model = OrderItem
+        fields = ('id', 'product', 'quantity', 'order','shop')
         read_only_fields = ('id',)
         extra_kwargs = {
             'order': {'write_only': True}
@@ -120,11 +144,37 @@ class OrderItemCreateSerializer(OrderItemSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    ordered_items = OrderItemCreateSerializer(read_only=True, many=True)
+    order_items = OrderItemCreateSerializer(read_only=True, many=True)
     total_sum = serializers.IntegerField()
-    contact = ClientCardSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Order
-        fields = ('id', 'ordered_items', 'status', 'dt', 'total_sum', 'contact',)
+        fields = ('id', 'order_items', 'user', 'status', 'dt', 'total_sum')
         read_only_fields = ('id',)
+
+
+class OrderSerializerTemplate(OrderItemSerializer):
+    order_items = OrderTemplateSerializer(read_only=True, many=True)
+    total_sum = serializers.IntegerField()
+    user = UserSerializer(read_only=True, many=False)
+
+    class Meta:
+        model = Order
+        fields = ('id', 'order_items', 'user', 'status', 'dt','total_sum')
+        read_only_fields = ('id',)
+
+
+class OrderInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ('id', 'dt', 'status')
+
+
+class PartnerOrderSerializer(serializers.ModelSerializer):
+    product = ProductInfoForShopSerializer(read_only=True)
+    order = OrderInfoSerializer(read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = ('__all__')

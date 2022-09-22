@@ -28,18 +28,38 @@
 
 
 }
+.order_item_card{
+	display: block;
+	width: 90%;
+	float: left;
+	transition: width .2s;
+    border: 1px solid #b5e9a7;
+	border-radius: 3px;
+	margin: 15px 15px 15px 15px;
+
+
+}
 </style>
 
 
-<input class="hide" id="hd-{{form.id}}-{{shop.shop_id}}" type="checkbox" >
-<label for="hd-{{form.id}}-{{shop.shop_id}}">Описание</label>
-<div>
     {% block content %}
-            {% for info_elem in shop.info %}
-                <p>{{ info_elem.parameter }} : {{ info_elem.value }}</p>
-            {% endfor %}
+    <input class="hide" id="hd-{{order.id}}" type="checkbox" >
+    <label for="hd-{{order.id}}">Детали заказа</label>
+    <div>
+        {% for order_items in order.order_items%}
+            <div class="order_item_card" >
+                <p>Магазин: {{order_items.shop.name}}</p>
+                <p>Товар: {{order_items.product.product.name}}</p>
+                <p>Цена за единицу: {{order_items.product.price}}</p>
+                <p>Количество: {{order_items.quantity}}</p>
+            </div>
+
+        {% endfor %}
+    </div>
     {% endblock %}
-</div>
+
+
+
 
 
 

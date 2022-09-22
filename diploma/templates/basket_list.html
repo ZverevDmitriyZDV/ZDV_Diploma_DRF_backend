@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+<style>
+.basket_card {
+    position: relative;
+	display: block;
+	width: 100%;
+	transition: width .2s;
+    border: 1px solid #b5e9a7;
+	border-radius: 3px;
+    float: left
+
+}
+.basket {
+	width: 100%;
+
+	transition: width .2s;
+    border: 1px solid #b5e9a7;
+	border-radius: 3px;
+
+
+
+}
+
+</style>
+{% load rest_framework %}
+
+{% block title %}Product ORDER INFO{% endblock %}
+<div class="basket" >
+
+        {% block content %}
+            <div class="basket_card">
+                <p>Статус: {{context.status}}</p>
+                <p>Сумма: {{context.total_sum}}</p>
+                <form action="basket/uprove" method="post" class="form-example">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" value="{{context.id}}">
+                    <input type="hidden" name="price" value="{{context.total_sum}}">
+                    <input type="submit" value="Оплатить заказ">
+                </form>
+                <form action="basket" method="post" class="form-example-delete">
+                    {% csrf_token %}
+                    <input type="submit" name = 'method' value="Удалить   заказ">
+                    <input type="hidden" name="order_id" value="{{context.id}}">
+                </form>
+
+
+                {% for form in context.order_items %}
+
+
+                    {% include "basket_item.html" %}
+
+                {% endfor %}
+                </div>
+
+
+        {% endblock %}
+
+
+</div>
+
+
+
+
+

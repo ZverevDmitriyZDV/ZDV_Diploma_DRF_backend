@@ -1,0 +1,39 @@
+<meta http-equiv=Content-Type content="text/html;charset=utf-8">
+<style>
+.product_card {
+	display: block;
+	width: 90%;
+	float: left;
+	transition: width .2s;
+    border: 1px solid #b5e9a7;
+	border-radius: 3px;
+}
+</style>
+
+
+
+
+
+<div class="product_card" >
+
+    <p>Продукт: {{form.product.product.name}}
+    <p>Категория: {{form.product.product.category}}
+
+    <form action="basket" method="post" class="form-basket-example" if-match="">
+        {% csrf_token %}
+
+        <div class="form-basket-qty">
+            <p>Кол-во:
+            <input type="number" name="qty" id="qty" value= "{{form.quantity}}">
+            <input type="hidden" name="shop_id" value="{{form.product.shop}}">
+            <input type="hidden" name="product_id" value="{{form.product.id}}">
+            <input type="hidden" name="order_item_id" value="{{form.id}}">
+            <input type="submit" name="method" value="изменить">
+            <input type="submit" name="method" value="удалить">
+        </div>
+    </form>
+    <p>Цена за ед: {{form.product.price}}
+
+
+</div>
+

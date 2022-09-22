@@ -29,44 +29,6 @@ ORDER_CHOICES = (
     ('in client', 'доставлен'),
 )
 
-
-###есл будуте работать###
-
-# class UserManager(BaseUserManager):
-#     """
-#     Миксин для управления пользователями
-#     """
-#     use_in_migrations = True
-#
-#     def _create_user(self, email, password, **extra_fields):
-#         """
-#         Create and save a user with the given username, email, and password.
-#         """
-#         if not email:
-#             raise ValueError('The given email must be set')
-#         email = self.normalize_email(email)
-#         user = self.model(email=email, **extra_fields)
-#         user.set_password(password)
-#         user.save(using=self._db)
-#         return user
-#
-#     def create_user(self, email, password=None, **extra_fields):
-#         extra_fields.setdefault('is_staff', False)
-#         extra_fields.setdefault('is_superuser', False)
-#         return self._create_user(email, password, **extra_fields)
-#
-#     def create_superuser(self, email, password, **extra_fields):
-#         extra_fields.setdefault('is_staff', True)
-#         extra_fields.setdefault('is_superuser', True)
-#
-#         if extra_fields.get('is_staff') is not True:
-#             raise ValueError('Superuser must have is_staff=True.')
-#         if extra_fields.get('is_superuser') is not True:
-#             raise ValueError('Superuser must have is_superuser=True.')
-#
-#         return self._create_user(email, password, **extra_fields)
-
-
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     type = models.CharField(verbose_name='Тип пользователя', choices=USER_TYPE_CHOICES, max_length=15, default='client')
@@ -75,8 +37,6 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]
 
-    # objects = UserManager()
-
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
@@ -84,7 +44,7 @@ class CustomUser(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = "Список пользователей"
         ordering = ('email',)
-        # app_label = 'diplome_ZDV'
+
 
 
 class Shop(models.Model):
@@ -130,9 +90,9 @@ class Product(models.Model):
 
 class ProductInfo(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE,
-                                verbose_name='Продукт', related_name='product_info')
+                                verbose_name='Продукт', related_name='product_infos')
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE,
-                             verbose_name='Магазин', related_name='product_info')
+                             verbose_name='Магазин', related_name='product_infos')
     name = models.CharField(max_length=100, verbose_name='Название')
     quantity = models.PositiveIntegerField(verbose_name='Количество')
     bp_number = models.PositiveIntegerField(verbose_name='Внутренний артикул')
@@ -191,7 +151,7 @@ class ClientCard(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='orders')
     dt = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=35, verbose_name='Статус заказа', choices=ORDER_CHOICES)
+    status = models.CharField(max_length=35, verbose_name='Статус заказа', choices=ORDER_CHOICES, default="in_process")
 
     class Meta:
         verbose_name = "Заказ"

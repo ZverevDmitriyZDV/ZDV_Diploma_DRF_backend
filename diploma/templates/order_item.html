@@ -1,0 +1,55 @@
+<meta http-equiv=Content-Type content="text/html;charset=utf-8">
+<style>
+.order_card {
+	display: block;
+	width: 90%;
+	float: left;
+	transition: width .2s;
+    border: 1px solid #b5e9a7;
+	border-radius: 3px;
+	margin: 15px 15px 15px 15px;
+
+
+}
+form.form-example {
+    display: table;
+}
+
+div.form-example {
+    display: table-row;
+}
+
+label, input {
+    display: table-cell;
+    margin-bottom: 10px;
+}
+
+label {
+    padding-right: 10px;
+}
+
+
+
+}
+</style>
+
+<div class="order_card" >
+
+    <p><a>Номер заказа: {{order.id}} |
+        Статус заказа: {{order.status}} |
+        Время обновления заказа: {{order.dt}}</a></p>
+    <p><b>Контактное лицо:{{order.user.first_name}} {{order.user.last_name}}  </b></p>
+    {%include "contact_data.html"%}
+    <p><b>Итоговая стоимость заказа {{order.total_sum}}</b></p>
+     {%include "order_item_info.html"%}
+
+</div>>
+
+
+
+
+
+
+
+
+
