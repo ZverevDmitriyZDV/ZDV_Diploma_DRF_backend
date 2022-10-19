@@ -7,20 +7,8 @@ from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views.generic import CreateView, TemplateView
-from rest_framework.authentication import  TokenAuthentication
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import ValidationError
-from backend.models import (
-    Shop,
-    ProductInfo,
-    Product,
-    Order,
-    OrderItem,
-    CustomUser,
-    Category,
-    Parameter,
-    ProductParameter,
-    ClientCard
-)
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import JsonResponse
@@ -29,7 +17,6 @@ from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
 from django.db.models import Q, Sum, F
-from django.core.mail import EmailMessage
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from backend.forms import (
@@ -60,7 +47,21 @@ from backend.serializers import (
     PartnerOrderSerializer,
     OrderSerializerTemplate
 )
+from backend.models import (
+    Shop,
+    ProductInfo,
+    Product,
+    Order,
+    OrderItem,
+    CustomUser,
+    Category,
+    Parameter,
+    ProductParameter,
+    ClientCard
+)
 from rest_framework.authtoken.models import Token
+from backend.tasks import send_auto_message
+
 
 # logger = logging.getLogger(__name__)
 
@@ -95,9 +96,8 @@ class CustomAuthToken(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=self.request.user)
         if created:
             message = f''' для API доступа используйте токкен {token.key}'''
-            email_to_client = EmailMessage('Приветсвуем Shop, Ниже Token для API', message,
-                                           to=[self.request.user.email])
-            email_to_client.send()
+            mail_subject = f"Приветсвуем Shop, Ниже Token для API"
+            send_auto_message.delay(mail_subject=mail_subject, message=message, to_email=self.request.user.email)
         return Response({
             'token': token.key,
             'email': self.request.user.email
@@ -124,8 +124,9 @@ class SignUpView(CreateView):
             if form.data.get("type") == "distributor":
                 message += f''' для API доступа используйте токкен {token.key}'''
 
-            email_to_client = EmailMessage('Добро пожаловать на сайте', message, to=[form.data.get("email")])
-            email_to_client.send()
+            subject_message = 'Добро пожаловать на сайте'
+            send_auto_message.delay(mail_subject=subject_message, message=message, to_email=form.data.get("email"))
+
             return redirect("homepage")
         else:
             return render(request, self.template_name, {"form": form})
@@ -164,8 +165,7 @@ def send_email_passord(user, request):
         'token': token.key,
     })
     mail_subject = 'Activate your blog account.'
-    email = EmailMessage(mail_subject, message, to=[to_email])
-    email.send()
+    send_auto_message.delay(mail_subject=mail_subject, message=message, to_email=to_email)
 
 
 class RequestForChangePasswordView(APIView):
@@ -576,8 +576,8 @@ class OrderUproveTemplateView(OrderView):
         })
 
         mail_subject = 'Your Order '
-        email = EmailMessage(mail_subject, message, to=[to_email])
-        email.send()
+
+        send_auto_message.delay(mail_subject=mail_subject, message=message, to_email=to_email)
 
         return Response({'Status': "Письмо отправлено"})
 
@@ -648,7 +648,8 @@ class PartnerOrderView(APIView):
             'order__user'
         ).select_related(
             'order'
-        )
+        )        ##################3
+
 
         serializer = PartnerOrderSerializer(orders, many=True)
         return Response(serializer.data)

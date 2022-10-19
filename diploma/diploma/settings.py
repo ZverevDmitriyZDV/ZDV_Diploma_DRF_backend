@@ -46,11 +46,11 @@ INSTALLED_APPS = [
 # REST_FRAMEWORK = {
 #     # 'DEFAULT_PERMISSION_CLASSES': (
 #     #     'rest_framework.permissions.AllowAny',
-#     ),
-# #     'DEFAULT_AUTHENTICATION_CLASSES': (
-# #         # 'rest_framework.authentication.TokenAuthentication',
-# #         'rest_framework.authentication.BasicAuthentication',
-# #     )
+#     # ),
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.TokenAuthentication',
+#         'rest_framework.authentication.BasicAuthentication',
+#     )
 # }
 
 MIDDLEWARE = [
@@ -92,9 +92,9 @@ WSGI_APPLICATION = 'diploma.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'diplomdb',
-        'USER': 'diplomuser',
-        'PASSWORD': 'password',
+        'NAME': 'diplomdb2',
+        'USER': 'diplomuser2',
+        'PASSWORD': 'password2',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -160,3 +160,7 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'dro4ilognomov@gmail.com'
 EMAIL_HOST_PASSWORD = 'bazdttparygkemfq'
 EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
+
+#Celery settings
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
