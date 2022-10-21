@@ -61,7 +61,9 @@ from backend.models import (
 )
 from rest_framework.authtoken.models import Token
 from backend.tasks import send_auto_message
-
+from rest_framework import viewsets, renderers
+from rest_framework.decorators import action
+from rest_framework import permissions
 
 # logger = logging.getLogger(__name__)
 
@@ -404,34 +406,41 @@ class ShopView(APIView):
             return render(request, self.template_name, {"form": form})
 
 
-class ProductInfoView(APIView):
-    """
-    Класс для поиска всех товаров товаров
-    или с использованием фильтров
-    http://127.0.0.1:8000/products?category_id=224&shop_id=3
-    """
+class ProductInfoViewSet(viewsets.ModelViewSet):
+    queryset = ProductInfo.objects.all()
+    serializer_class = ProductGetSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def get(self, request, *args, **kwargs):
 
-        query = Q(shop__state=True)
-        shop_id = request.query_params.get('shop_id')
-        category_id = request.query_params.get('category_id')
-
-        if shop_id:
-            query = query & Q(shop_id=shop_id)
-
-        if category_id:
-            query = query & Q(product__category_id=category_id)
-
-        # фильтруем и отбрасываем дуликаты
-        queryset = ProductInfo.objects.filter(
-            query).select_related(
-            'shop', 'product__category').prefetch_related(
-            'product_parameters__parameter').distinct()
-
-        serializer = ProductGetSerializer(queryset, many=True)
-
-        return Response(serializer.data)
+##### ViewSet замена ProductInfoView : APIWiew
+# class ProductInfoView(APIView):
+#     """
+#     Класс для поиска всех товаров товаров
+#     или с использованием фильтров
+#     http://127.0.0.1:8000/products?category_id=224&shop_id=3
+#     """
+#
+#     def get(self, request, *args, **kwargs):
+#
+#         query = Q(shop__state=True)
+#         shop_id = request.query_params.get('shop_id')
+#         category_id = request.query_params.get('category_id')
+#
+#         if shop_id:
+#             query = query & Q(shop_id=shop_id)
+#
+#         if category_id:
+#             query = query & Q(product__category_id=category_id)
+#
+#         # фильтруем и отбрасываем дуликаты
+#         queryset = ProductInfo.objects.filter(
+#             query).select_related(
+#             'shop', 'product__category').prefetch_related(
+#             'product_parameters__parameter').distinct()
+#
+#         serializer = ProductGetSerializer(queryset, many=True)
+#
+#         return Response(serializer.data)
 
 
 class ProductInfoForUserView(TemplateView):
@@ -648,8 +657,7 @@ class PartnerOrderView(APIView):
             'order__user'
         ).select_related(
             'order'
-        )        ##################3
-
+        )  ##################3
 
         serializer = PartnerOrderSerializer(orders, many=True)
         return Response(serializer.data)

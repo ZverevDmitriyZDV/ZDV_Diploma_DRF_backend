@@ -24,7 +24,7 @@ from backend.views import (
     CategoryView,
     ShopView,
     CustomAuthToken,
-    ProductInfoView,
+    # ProductInfoView,
     ProductInfoForUserView,
     OrderView,
     BasketTemplateView,
@@ -37,7 +37,7 @@ from django.urls import path, include
 from backend.views import HomepageView, AccountDetails
 from data.outload_data import PartnerPriceFileUpdate
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-
+from diploma.router import router_viewset
 
 urlpatterns = [
     path('', HomepageView.as_view(), name='homepage'),
@@ -50,7 +50,8 @@ urlpatterns = [
     path('user/details', AccountDetails.as_view(), name='user_details'),
     path('categories', CategoryView.as_view(), name='categories'),
     path('shops', ShopView.as_view(), name='shops'),
-    path('api/v1/products', ProductInfoView.as_view(), name='products'),
+    path('api/v1/', include(router_viewset.urls)),
+    # path('api/v1/products', ProductInfoView.as_view(), name='products'),
     path('user/products', ProductInfoForUserView.as_view(), name='products_user'),
     path('user/basket', BasketTemplateView.as_view(), name='user_basket'),
     path('user/orders', OrderTemplateView.as_view(), name='user_orders'),

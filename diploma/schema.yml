@@ -116,13 +116,9 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/v1/products:
+  /api/v1/products/:
     get:
-      operationId: api_v1_products_retrieve
-      description: |-
-        Класс для поиска всех товаров товаров
-        или с использованием фильтров
-        http://127.0.0.1:8000/products?category_id=224&shop_id=3
+      operationId: api_v1_products_list
       tags:
       - api
       security:
@@ -131,6 +127,143 @@ paths:
       - {}
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductGet'
+          description: ''
+    post:
+      operationId: api_v1_products_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductGet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductGet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductGet'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductGet'
+          description: ''
+  /api/v1/products/{id}/:
+    get:
+      operationId: api_v1_products_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Информация о продукте.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductGet'
+          description: ''
+    put:
+      operationId: api_v1_products_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Информация о продукте.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductGet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductGet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductGet'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductGet'
+          description: ''
+    patch:
+      operationId: api_v1_products_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Информация о продукте.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductGet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductGet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductGet'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductGet'
+          description: ''
+    delete:
+      operationId: api_v1_products_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Информация о продукте.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
           description: No response body
   /api/v1/user/order_data:
     get:
@@ -362,6 +495,125 @@ components:
           maxLength: 100
       required:
       - id
+      - name
+    PatchedProductGet:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название
+          maxLength: 100
+        product:
+          allOf:
+          - $ref: '#/components/schemas/ProductGetProduct'
+          readOnly: true
+        shop:
+          allOf:
+          - $ref: '#/components/schemas/ShopName'
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Количество
+        price:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Стоимость
+        price_rrc:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Стоимость без скидки
+        product_parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductParameter'
+          readOnly: true
+    ProductGet:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название
+          maxLength: 100
+        product:
+          allOf:
+          - $ref: '#/components/schemas/ProductGetProduct'
+          readOnly: true
+        shop:
+          allOf:
+          - $ref: '#/components/schemas/ShopName'
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Количество
+        price:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Стоимость
+        price_rrc:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Стоимость без скидки
+        product_parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductParameter'
+          readOnly: true
+      required:
+      - id
+      - name
+      - price
+      - price_rrc
+      - product
+      - product_parameters
+      - quantity
+      - shop
+    ProductGetProduct:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Название
+          maxLength: 100
+        category:
+          type: string
+          readOnly: true
+      required:
+      - category
+      - name
+    ProductParameter:
+      type: object
+      properties:
+        parameter:
+          type: string
+          readOnly: true
+        value:
+          type: string
+          title: Значение
+          maxLength: 100
+      required:
+      - parameter
+      - value
+    ShopName:
+      type: object
+      properties:
+        name:
+          type: string
+          readOnly: true
+      required:
       - name
   securitySchemes:
     basicAuth:
