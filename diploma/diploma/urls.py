@@ -36,6 +36,8 @@ from backend.views import (
 from django.urls import path, include
 from backend.views import HomepageView, AccountDetails
 from data.outload_data import PartnerPriceFileUpdate
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 
 urlpatterns = [
     path('', HomepageView.as_view(), name='homepage'),
@@ -59,4 +61,9 @@ urlpatterns = [
     path('api/v1/partner/file_update', PartnerPriceFileUpdate.as_view(), name='partner_update_products_file'),
     path('api/v1/user/order_data', OrderView.as_view(), name='order'),
     path('', include('django.contrib.auth.urls')),
+    # YOUR PATTERNS
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Optional UI:
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]

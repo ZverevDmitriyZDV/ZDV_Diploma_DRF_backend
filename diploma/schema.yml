@@ -1,0 +1,378 @@
+openapi: 3.0.3
+info:
+  title: DiplomaShopAPI
+  version: 1.0.0
+  description: API for DiplomaShopAPI
+paths:
+  /activate/{uidb64}/token={token}/:
+    get:
+      operationId: activate_token=_retrieve
+      description: |-
+        класс переписывает в БД пароль пользователя через доступ по токен-ключу
+        через форму делаем валидацию пароля, в классе сверяем соответствие
+        после успешного изменения пароля? токен, если пользователь имеет тип покупатель, стирается
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: uidb64
+        schema:
+          type: string
+        required: true
+      tags:
+      - activate
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: activate_token=_create
+      description: |-
+        класс переписывает в БД пароль пользователя через доступ по токен-ключу
+        через форму делаем валидацию пароля, в классе сверяем соответствие
+        после успешного изменения пароля? токен, если пользователь имеет тип покупатель, стирается
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: uidb64
+        schema:
+          type: string
+        required: true
+      tags:
+      - activate
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/partner/file_update:
+    post:
+      operationId: api_v1_partner_file_update_create
+      description: |-
+        Класс для обновления прайса от поставщика
+        Только если есть файл прайса в папке data
+        Только если пользователь зарегестрировал за собой Магазин
+
+        POST / api / v1 / partner / file_update
+
+        {
+            "token": "76b06cbb9092619efc7fe9f08bbad327ea36a888",
+            "filename": "shop1.yaml"
+        }
+        "все изменения внесены или созданы"
+
+        {
+            "token": "76b06cbb9092619efc7fe9f08bbad327ea36a888",
+            "filename": "shop2.yaml"
+        }
+         'Магазина не существует'
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/partner/orders:
+    get:
+      operationId: api_v1_partner_orders_retrieve
+      description: |-
+        Класс для поиска всех товаров в заказе для конкретного магазина
+        с использованием фильтра по номеру заказа
+        http://127.0.0.1:8000/api/v1/partner/orders?order=2?status="paid"
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/partner/update:
+    post:
+      operationId: api_v1_partner_update_create
+      description: |-
+        Класс для обновления прайса от поставщика
+        обновление через ссылку на файл прайса
+        Идет проверка пользователя на сохдание магазина
+        Если Магазин не принадлежит пользователю, то будет ошибка
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/products:
+    get:
+      operationId: api_v1_products_retrieve
+      description: |-
+        Класс для поиска всех товаров товаров
+        или с использованием фильтров
+        http://127.0.0.1:8000/products?category_id=224&shop_id=3
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/user/order_data:
+    get:
+      operationId: api_v1_user_order_data_retrieve
+      description: класс для получения данных по истории заказе API по авторизованному
+        клиенту
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /categories:
+    get:
+      operationId: categories_list
+      description: Класс для просмотра категорий
+      tags:
+      - categories
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+  /order/payed/{uidb64}/token={token}/order={order}:
+    get:
+      operationId: order_payed_token=_order=_retrieve
+      parameters:
+      - in: path
+        name: order
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: uidb64
+        schema:
+          type: string
+        required: true
+      tags:
+      - order
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /shops:
+    get:
+      operationId: shops_retrieve
+      description: |-
+        Класс для редактирования данных Магазина если пользователь магазин
+        Если пользователь - клиент, то выдаст список вагазинов по запросу
+      tags:
+      - shops
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: shops_create
+      description: |-
+        Класс для редактирования данных Магазина если пользователь магазин
+        Если пользователь - клиент, то выдаст список вагазинов по запросу
+      tags:
+      - shops
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /user/basket/uprove:
+    get:
+      operationId: user_basket_uprove_retrieve
+      description: класс для подтверждения заказа
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: user_basket_uprove_create
+      description: класс для подтверждения заказа
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /user/get_token/:
+    get:
+      operationId: user_get_token_retrieve
+      description: |-
+        класс определения токен-ключа
+        при запросе проверяет тип пользователя, если магазон, то выдает/создает токен пользователю
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+    post:
+      operationId: user_get_token_create
+      description: |-
+        класс определения токен-ключа
+        при запросе проверяет тип пользователя, если магазон, то выдает/создает токен пользователю
+      tags:
+      - user
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+  /user/password_change/:
+    get:
+      operationId: user_password_change_retrieve
+      description: |-
+        класс отправляет сообщение с сылкой на изменение пароля
+        определяем пользователя ,
+        если авторизован - ссылка на смену пароля отправлятся сразу,
+        если нет - заполняется запрос через форму
+        формируется письмо и отправлятся на адрес пользователя, если он прошел аутенфикацию.
+        Если просто хочет заменить пароль без авторизации, то формируется письмо, через поиск в БД пользователяЮ
+         если найден пользователь по ключевым полям, то отправляем отправляемся письмо с сылкой на изменение пароля
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: user_password_change_create
+      description: |-
+        класс отправляет сообщение с сылкой на изменение пароля
+        определяем пользователя ,
+        если авторизован - ссылка на смену пароля отправлятся сразу,
+        если нет - заполняется запрос через форму
+        формируется письмо и отправлятся на адрес пользователя, если он прошел аутенфикацию.
+        Если просто хочет заменить пароль без авторизации, то формируется письмо, через поиск в БД пользователяЮ
+         если найден пользователь по ключевым полям, то отправляем отправляемся письмо с сылкой на изменение пароля
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - password
+      - token
+      - username
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название
+          maxLength: 100
+      required:
+      - id
+      - name
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
