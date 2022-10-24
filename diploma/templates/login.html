@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load socialaccount %}
+{% providers_media_js %}
 
 {% block title %}LOGIN{% endblock %}
 {% block content %}
@@ -9,4 +11,9 @@
             <button type="submit">Вход</button>
         </form>
     </div>
+<body>
+    <button><a href="{% provider_login_url "google" method="oauth2"%}"> google login</a></button>
+    <button><a href="{% provider_login_url "facebook" method="oauth2"%}"> Facebook login</a></button>
+
+</body>
 {% endblock %}

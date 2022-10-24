@@ -1,12 +1,18 @@
 import yaml
-from rest_framework.parsers import JSONParser
 from yaml.loader import SafeLoader
 from rest_framework.authentication import TokenAuthentication
-from backend.models import Shop, ProductInfo, Product, Category, Parameter, ProductParameter, CustomUser
+from backend.models import (
+    Shop,
+    ProductInfo,
+    Product,
+    Category,
+    Parameter,
+    ProductParameter,
+    CustomUser
+)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import os
-from rest_framework.authtoken.models import Token
 
 
 
@@ -34,7 +40,10 @@ class PartnerPriceFileUpdate(APIView):
 
 
     """
+
     authentication_classes = [TokenAuthentication]
+
+
 
     def post(self, request, *args, **kwargs):
 

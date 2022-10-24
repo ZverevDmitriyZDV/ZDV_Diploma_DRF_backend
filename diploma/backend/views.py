@@ -61,9 +61,9 @@ from backend.models import (
 )
 from rest_framework.authtoken.models import Token
 from backend.tasks import send_auto_message
-from rest_framework import viewsets, renderers
-from rest_framework.decorators import action
+from rest_framework import viewsets
 from rest_framework import permissions
+from rest_framework.throttling import UserRateThrottle
 
 # logger = logging.getLogger(__name__)
 
@@ -86,7 +86,7 @@ class CustomAuthToken(ObtainAuthToken):
     при запросе проверяет тип пользователя, если магазон, то выдает/создает токен пользователю
 
     """
-
+    throttle_classes = [UserRateThrottle]
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return render(request, 'signup.html')
@@ -107,6 +107,7 @@ class CustomAuthToken(ObtainAuthToken):
 
 
 class SignUpView(CreateView):
+    throttle_classes = [UserRateThrottle]
     """
     класс для создания новых пользователей, по custom шаблону
     пользователь при регистарции может указать свой тип самостоятельно, от этого зависит получит ли он токе-ключ или нет на почту
@@ -140,6 +141,7 @@ class LoginView(LoginView):
     """
     template_name = 'login.html'
     success_url = reverse_lazy("homepage")
+    throttle_classes = [UserRateThrottle]
 
     # Redirect from login page in case user already authenticated and loggedin
     def get(self, request, *args, **kwargs):
@@ -171,6 +173,7 @@ def send_email_passord(user, request):
 
 
 class RequestForChangePasswordView(APIView):
+    throttle_classes = [UserRateThrottle]
     """
     класс отправляет сообщение с сылкой на изменение пароля
     определяем пользователя ,
@@ -209,6 +212,7 @@ class RequestForChangePasswordView(APIView):
 
 
 class ChangePasswordView(APIView):
+    throttle_classes = [UserRateThrottle]
     """
     класс переписывает в БД пароль пользователя через доступ по токен-ключу
     через форму делаем валидацию пароля, в классе сверяем соответствие
@@ -286,6 +290,7 @@ class AccountDetails(CreateView):
 
 
 class PartnerPriceApiUpdate(APIView):
+    throttle_classes = [UserRateThrottle]
     """
     Класс для обновления прайса от поставщика
     обновление через ссылку на файл прайса
@@ -354,6 +359,7 @@ class PartnerPriceApiUpdate(APIView):
 
 
 class CategoryView(ListAPIView):
+    throttle_classes = [UserRateThrottle]
     """
     Класс для просмотра категорий
     """
@@ -362,6 +368,7 @@ class CategoryView(ListAPIView):
 
 
 class ShopView(APIView):
+    throttle_classes = [UserRateThrottle]
     """
     Класс для редактирования данных Магазина если пользователь магазин
     Если пользователь - клиент, то выдаст список вагазинов по запросу
@@ -522,6 +529,7 @@ class ProductInfoForUserView(TemplateView):
 
 
 class OrderView(APIView):
+    throttle_classes = [UserRateThrottle]
     '''класс для получения данных по истории заказе API по авторизованному клиенту'''
 
     def get(self, request, *args, **kwargs):
@@ -657,7 +665,7 @@ class PartnerOrderView(APIView):
             'order__user'
         ).select_related(
             'order'
-        )  ##################3
+        )
 
         serializer = PartnerOrderSerializer(orders, many=True)
         return Response(serializer.data)
