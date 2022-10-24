@@ -41,6 +41,7 @@ from diploma.router import router_viewset
 
 urlpatterns = [
     path('', HomepageView.as_view(), name='homepage'),
+    path('accounts/', include('allauth.urls')),
     path('admin/', admin.site.urls),
     path('activate/<slug:uidb64>/token=<slug:token>/', ChangePasswordView.as_view(), name='activate'),
     path('user/signup/', SignUpView.as_view(), name="signup_user"),
