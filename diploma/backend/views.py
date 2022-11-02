@@ -414,7 +414,10 @@ class ShopView(APIView):
 
 
 class ProductInfoViewSet(viewsets.ModelViewSet):
-    queryset = ProductInfo.objects.all()
+    queryset = ProductInfo.objects.all().select_related(
+            'shop', 'product__category').prefetch_related(
+            'product_parameters__parameter').distinct()
+
     serializer_class = ProductGetSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
@@ -624,7 +627,7 @@ class BasketTemplateView(TemplateView):
             order_id = request.POST.get("order_id")
             order = Order.objects.get(id=order_id)
             order.delete()
-            return redirect('products-user')
+            return redirect('products_user')
 
         order_item_id = request.POST.get("order_item_id")
         qty = request.POST.get("qty")
