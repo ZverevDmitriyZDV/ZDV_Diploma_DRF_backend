@@ -1,25 +1,38 @@
-Steps for turning on:
+## HOW to run the project:
 
-to turn on google and facbook make steps:
-steps in photo for help
+- to turn on google and facebook make [steps](https://github.com/ZverevDmitriyZDV/ZDV_Diploma_DRF_backend/tree/master/photo%20for%20help):
 
-pip install -r requirements.txt
+- install all libraries 
+```
+  pip install -r requirements.txt
+```
+- make migrations and run server
+```
+  python manage.py makemigrations
+  python manage.py migrate
+  python manage.py runserver
+```
+- run redis server
+```
+  redis-server
+  redis-cli
+```
+- run celery for async requests
+```
+  python -m celery -A diploma  worker
+```
 
-python manage.py makemigrations
-python manage.py migrate
-python manage.py runserver
+## For correct tests, follow steps below:
 
-redis-server
-redis-cli
-
-python -m celery -A diploma  worker
-
-
-Для корректной работы тестов необходимо проделать следующие шаги
- 
+- create connection with postgress DB
+```
 sudo -u posgress sql <db_name_in_settings>
-после соединения с БД введите команду ниже
-ALTER USER <db_user_in_settings> CREATEDB;
-
-для запуска тестов:
+```
+- after creatin DB, create user
+```
+ALTER USER <db_user_in_settings> CREATEDB
+```
+- run tests with command
+```
 python manage.py test backend
+```
